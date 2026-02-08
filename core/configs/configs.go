@@ -18,9 +18,14 @@ type Config struct {
 	Auth     Auth   `json:"auth"`
 }
 
+type System struct {
+	Arch     string `json:"arch"`
+	HostName string `json:"host_name"`
+}
+
 type Configs struct {
-	Config Config            `json:"configs"`
-	System map[string]string `json:"system"`
+	Config Config `json:"configs"`
+	System System `json:"system"`
 }
 
 var Cfg Configs
