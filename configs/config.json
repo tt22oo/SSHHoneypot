@@ -1,0 +1,16 @@
+{
+    "configs": {
+        "listen": ":22",
+        "banner": "test1234",
+        "max_delay": 100,
+        "auth": {
+            "auth": true,
+            "username": "root",
+            "password": "password"
+        }
+    },
+    "system": {
+        "arch": "x86_64",
+        "host_name": "server"
+    }
+}

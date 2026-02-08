@@ -1,0 +1,15 @@
+{
+    "root": {
+        "type": "directory",
+        "metadata": null,
+        "children": {
+            "abc": {
+                "type": "file",
+                "metadata": {
+                    "size": 3
+                },
+                "data": "abc"
+            }
+        }
+    }
+}
