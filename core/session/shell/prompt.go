@@ -7,7 +7,8 @@ import (
 	"honeypot/core/session/stream"
 )
 
+// print prompt
 func writePrompt(s *session.Session) error {
-	prompt := fmt.Sprintf("%s@%s:%s# ", s.Session.User(), configs.Cfg.System["hostname"], s.Path)
+	prompt := fmt.Sprintf("%s@%s:%s# ", s.Session.User(), configs.Cfg.System["host_name"], s.Path)
 	return stream.Output(s, prompt)
 }
