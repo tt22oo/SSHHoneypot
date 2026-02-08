@@ -13,7 +13,7 @@ func Uname(s *session.Session, args []string) (string, int) {
 
 	switch args[1] {
 	case "-m":
-		return fmt.Sprintf("%s\r\n", configs.Cfg.System["arch"]), 0
+		return fmt.Sprintf("%s\r\n", configs.Cfg.System.Arch), 0
 	default:
 		return "Try 'uname --help' for more information.\r\n", 0
 	}
