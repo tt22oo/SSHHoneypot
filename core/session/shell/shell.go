@@ -18,7 +18,7 @@ func Handler(s *session.Session) error {
 			return err
 		}
 
-		log.Add(log.Command, output, s.ID, s.Host)
+		log.Add(log.Command, output, s.Host, s.ID)
 
 		err = parseShell(s, output)
 		if err != nil {
