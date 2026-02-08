@@ -7,5 +7,5 @@ import (
 )
 
 func Arch(s *session.Session, args []string) (string, int) {
-	return fmt.Sprintf("%s\r\n", configs.Cfg.System["arch"]), 0
+	return fmt.Sprintf("%s\r\n", configs.Cfg.System.Arch), 0
 }
