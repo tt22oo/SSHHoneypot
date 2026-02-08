@@ -17,20 +17,14 @@ func main() {
 
 	commands.Init()
 
-	var server *ssh.Server
+	server := &ssh.Server{
+		Addr:    configs.Cfg.Config.Listen,
+		Handler: handler.Handler,
+		Version: configs.Cfg.Config.Banner,
+	}
+
 	if configs.Cfg.Config.Auth.Auth {
-		server = &ssh.Server{
-			Addr:            configs.Cfg.Config.Listen,
-			PasswordHandler: auth.Auth,
-			Handler:         handler.Handler,
-			Version:         configs.Cfg.Config.Banner,
-		}
-	} else {
-		server = &ssh.Server{
-			Addr:    configs.Cfg.Config.Listen,
-			Handler: handler.Handler,
-			Version: configs.Cfg.Config.Banner,
-		}
+		server.PasswordHandler = auth.Auth
 	}
 
 	panic(server.ListenAndServe())
