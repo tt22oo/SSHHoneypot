@@ -93,6 +93,9 @@ func InitSession(s ssh.Session) (*Session, error) {
 	}
 
 	session.Dirs, err = filesystem.Parse(f)
+	if err != nil {
+		return nil, err
+	}
 	session.Entry = session.Dirs["root"]
 
 	log.Add(log.Connection, session.Host, session.Host, session.ID)
