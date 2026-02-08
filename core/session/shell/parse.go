@@ -2,6 +2,7 @@ package shell
 
 import (
 	"honeypot/core/commands"
+	"honeypot/core/filesystem"
 	"honeypot/core/session"
 	"honeypot/core/session/stream"
 )
@@ -11,6 +12,7 @@ func parseInput(input string) []string {
 		quote  rune
 		result []string
 	)
+
 	buf := ""
 	for i, w := range input {
 		switch w {
@@ -30,8 +32,10 @@ func parseInput(input string) []string {
 				continue
 			}
 
-			result = append(result, buf)
-			buf = ""
+			if buf != "" {
+				result = append(result, buf)
+				buf = ""
+			}
 			result = append(result, string(w))
 		case '&':
 			if quote == '"' || quote == '\'' {
@@ -85,7 +89,6 @@ func parseInput(input string) []string {
 
 func parseShell(s *session.Session, input string) error {
 	var command []string
-
 	cmds := parseInput(input)
 	for i, cmd := range cmds {
 		switch cmd {
@@ -117,16 +120,50 @@ func parseShell(s *session.Session, input string) error {
 			if stat != 0 {
 				return nil
 			}
-		default:
-			command = append(command, cmd)
+		case ">":
+			if len(command) == 0 {
+				continue
+			}
 
-			if i+1 == len(cmds) {
-				result, _ := commands.Run(s, command)
-				command = make([]string, 0)
-
-				err := stream.Output(s, result)
+			output, _ := commands.Run(s, command)
+			command = make([]string, 0)
+			if i+2 > len(cmds) {
+				err := stream.Output(s, "-bash: parse error near '\\n'\r\n")
 				if err != nil {
 					return err
+				}
+
+				continue
+			}
+
+			s.Entry.Children[cmds[i+1]] = &filesystem.Entry{
+				Type: filesystem.TypeFile,
+				Meta: &filesystem.MetaData{
+					Size: len(output),
+				},
+				Data: &output,
+			}
+
+			cmds[i+1] = ""
+
+			err := filesystem.Save(s.Dirs, s.Host)
+			if err != nil {
+				return err
+			}
+		default:
+			if cmd != "" {
+				command = append(command, cmd)
+			}
+
+			if i+1 == len(cmds) {
+				if len(command) > 0 {
+					result, _ := commands.Run(s, command)
+					command = make([]string, 0)
+
+					err := stream.Output(s, result)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
