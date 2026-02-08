@@ -84,9 +84,8 @@ func parseInput(input string) []string {
 }
 
 func parseShell(s *session.Session, input string) error {
-	var (
-		command []string
-	)
+	var command []string
+
 	cmds := parseInput(input)
 	for i, cmd := range cmds {
 		switch cmd {
