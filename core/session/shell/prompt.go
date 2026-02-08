@@ -9,6 +9,6 @@ import (
 
 // print prompt
 func writePrompt(s *session.Session) error {
-	prompt := fmt.Sprintf("%s@%s:%s# ", s.Session.User(), configs.Cfg.System["host_name"], s.Path)
+	prompt := fmt.Sprintf("%s@%s:%s# ", s.Session.User(), configs.Cfg.System.HostName, s.Path)
 	return stream.Output(s, prompt)
 }
