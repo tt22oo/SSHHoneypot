@@ -7,12 +7,15 @@ import (
 )
 
 func parseInput(input string) []string {
-	var result []string
-	quote, buf := false, ""
+	var (
+		quote  rune
+		result []string
+	)
+	buf := ""
 	for i, w := range input {
 		switch w {
 		case ' ':
-			if quote {
+			if quote == '"' || quote == '\'' {
 				buf += string(w)
 				continue
 			} else if buf == "" {
@@ -22,7 +25,7 @@ func parseInput(input string) []string {
 			result = append(result, buf)
 			buf = ""
 		case ';', '>':
-			if quote {
+			if quote == '"' || quote == '\'' {
 				buf += string(w)
 				continue
 			}
@@ -31,7 +34,7 @@ func parseInput(input string) []string {
 			buf = ""
 			result = append(result, string(w))
 		case '&':
-			if quote {
+			if quote == '"' || quote == '\'' {
 				buf += string(w)
 				continue
 			} else if i+1 == len([]rune(input)) {
@@ -51,14 +54,21 @@ func parseInput(input string) []string {
 			}
 
 		case '"', '\'':
-			if quote {
-				quote = false
+			if quote == '"' && w == '"' {
+				quote = 0
 				result = append(result, buf)
-
+				continue
+			} else if quote == '\'' && w == '\'' {
+				quote = 0
+				result = append(result, buf)
 				continue
 			}
 
-			quote = true
+			if quote == 0 {
+				quote = w
+			} else {
+				buf += string(w)
+			}
 		default:
 			if i+1 == len([]rune(input)) {
 				buf += string(w)
@@ -75,8 +85,7 @@ func parseInput(input string) []string {
 
 func parseShell(s *session.Session, input string) error {
 	var (
-		command  []string
-		lastStat int
+		command []string
 	)
 	cmds := parseInput(input)
 	for i, cmd := range cmds {
@@ -86,9 +95,8 @@ func parseShell(s *session.Session, input string) error {
 				continue
 			}
 
-			result, stat := commands.Run(s, command)
+			result, _ := commands.Run(s, command)
 			command = make([]string, 0)
-			lastStat = stat
 
 			err := stream.Output(s, result)
 			if err != nil {
@@ -97,25 +105,25 @@ func parseShell(s *session.Session, input string) error {
 		case "&&":
 			if len(command) == 0 {
 				continue
-			} else if lastStat != 0 {
-				break
 			}
 
 			result, stat := commands.Run(s, command)
-			command = make([]string, 0)
-			lastStat = stat
+			command = nil
 
 			err := stream.Output(s, result)
 			if err != nil {
 				return err
 			}
+
+			if stat != 0 {
+				return nil
+			}
 		default:
 			command = append(command, cmd)
 
 			if i+1 == len(cmds) {
-				result, stat := commands.Run(s, command)
+				result, _ := commands.Run(s, command)
 				command = make([]string, 0)
-				lastStat = stat
 
 				err := stream.Output(s, result)
 				if err != nil {
