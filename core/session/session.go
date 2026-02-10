@@ -4,20 +4,24 @@ import (
 	"fmt"
 	"honeypot/core/configs"
 	"honeypot/core/filesystem"
+	"honeypot/core/filesystem/proc"
 	"honeypot/core/session/log"
 	"net"
 	"os"
+	"sync"
 
 	"github.com/gliderlabs/ssh"
 )
 
 type Session struct {
-	ID      string
-	Session ssh.Session
-	Host    string
-	Path    string
-	Entry   *filesystem.Entry
-	Dirs    map[string]*filesystem.Entry
+	ID        string
+	Session   ssh.Session
+	Host      string
+	Path      string
+	Entry     *filesystem.Entry
+	Dirs      map[string]*filesystem.Entry
+	Procs     map[int]*proc.Process // key: pid
+	ProcMutex sync.Mutex
 }
 
 func newDirs(host string) (*os.File, error) {
@@ -31,6 +35,31 @@ func newDirs(host string) (*os.File, error) {
 	_, err = os.Stat(path)
 	if err != nil {
 		data, err := os.ReadFile("configs/dirs.json")
+		if err != nil {
+			return nil, err
+		}
+
+		err = os.WriteFile(path, data, 0644)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	f, err := os.Open(path)
+	return f, err
+}
+
+func newProcs(host string) (*os.File, error) {
+	path := fmt.Sprintf("sessions/%s", host)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	path += "/procs.json"
+	_, err = os.Stat(path)
+	if err != nil {
+		data, err := os.ReadFile("configs/proc/procs.json")
 		if err != nil {
 			return nil, err
 		}
@@ -62,20 +91,25 @@ func fetchID(host string) (string, error) {
 	return fmt.Sprintf("%d", n+1), nil
 }
 
-func newSession(s ssh.Session) (*Session, *os.File, error) {
+func newSession(s ssh.Session) (*Session, *os.File, *os.File, error) {
 	host, _, err := net.SplitHostPort(s.RemoteAddr().String())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	f, err := newDirs(host)
+	fdirs, err := newDirs(host)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+
+	fprocs, err := newProcs(host)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 
 	id, err := fetchID(host)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	return &Session{
@@ -83,20 +117,27 @@ func newSession(s ssh.Session) (*Session, *os.File, error) {
 		Session: s,
 		Host:    host,
 		Path:    "/root",
-	}, f, nil
+	}, fdirs, fprocs, nil
 }
 
 func InitSession(s ssh.Session) (*Session, error) {
-	session, f, err := newSession(s)
+	session, fdirs, fprocs, err := newSession(s)
 	if err != nil {
 		return nil, err
 	}
 
-	session.Dirs, err = filesystem.Parse(f)
+	session.Dirs, err = filesystem.Parse(fdirs)
 	if err != nil {
 		return nil, err
 	}
 	session.Entry = session.Dirs["root"]
+
+	session.ProcMutex.Lock()
+	session.Procs, err = proc.Parse(fprocs)
+	session.ProcMutex.Unlock()
+	if err != nil {
+		return nil, err
+	}
 
 	log.Add(log.Connection, session.Host, session.Host, session.ID)
 
