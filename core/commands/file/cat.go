@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"honeypot/core/filesystem"
+	"honeypot/core/filesystem/proc"
 	"honeypot/core/session"
 	"honeypot/core/session/stream"
-	"log"
 	"strings"
 )
 
@@ -58,24 +58,44 @@ func handleStdin(s *session.Session) error {
 	return nil
 }
 
-func Cat(s *session.Session, args []string) (string, int) {
-	switch len(args) {
-	case 1:
+func Cat(s *session.Session, args []string, pid int) (string, int) {
+	defer proc.Delete(s.Procs, pid, s.Host)
+
+	if len(args) == 1 {
 		err := handleStdin(s)
 		if err != nil {
-			log.Println(err)
 			return "", 1
 		}
-	case 2:
-		data, err := readFile(s, args)
-		if err != nil {
-			return fmt.Sprintf("cat: %s: %s\r\n", args[1], err), 1
-		}
+	} else if len(args) == 2 {
+		if strings.HasPrefix(args[1], "/proc") {
+			output, err := proc.Fetch(s.Procs, args[1])
+			if err != nil {
+				output := fmt.Sprintf("cat: %s: No such file or directory\r\n", args[1])
+				stream.Output(s, output)
 
-		return data, 0
-	default:
-		return "", 0
+				return "", 1
+			}
+
+			return output, 0
+		} else if strings.HasPrefix(s.Path, "/proc") {
+			output, err := proc.Fetch(s.Procs, fmt.Sprintf("%s/%s", s.Path, args[1]))
+			if err != nil {
+				output := fmt.Sprintf("cat: %s: No such file or directory\r\n", args[1])
+				stream.Output(s, output)
+
+				return "", 1
+			}
+
+			return output, 0
+		} else {
+			data, err := readFile(s, args)
+			if err != nil {
+				return fmt.Sprintf("cat: %s: %s\r\n", args[1], err), 1
+			}
+
+			return data, 0
+		}
 	}
 
-	return "", 0
+	return "Try 'cat --help' for more information.\r\n", 0
 }

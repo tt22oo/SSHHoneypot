@@ -3,10 +3,12 @@ package system
 import (
 	"fmt"
 	"honeypot/core/configs"
+	"honeypot/core/filesystem/proc"
 	"honeypot/core/session"
 )
 
-func Uname(s *session.Session, args []string) (string, int) {
+func Uname(s *session.Session, args []string, pid int) (string, int) {
+	defer proc.Delete(s.Procs, pid, s.Host)
 	if len(args) < 2 {
 		return "Linux\r\n", 0
 	}

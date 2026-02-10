@@ -6,7 +6,7 @@ import (
 	"honeypot/core/session"
 )
 
-type command func(s *session.Session, args []string) (string, int)
+type command func(s *session.Session, args []string, pid int) (string, int)
 
 var commandTables = make(map[string]command)
 
@@ -26,4 +26,5 @@ func Init() {
 	add("uname", system.Uname)
 	add("arch", system.Arch)
 	add("clear", system.Clear)
+	add("sleep", system.Sleep)
 }

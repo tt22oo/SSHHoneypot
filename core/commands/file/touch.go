@@ -2,10 +2,13 @@ package file
 
 import (
 	"honeypot/core/filesystem"
+	"honeypot/core/filesystem/proc"
 	"honeypot/core/session"
 )
 
-func Touch(s *session.Session, args []string) (string, int) {
+func Touch(s *session.Session, args []string, pid int) (string, int) {
+	defer proc.Delete(s.Procs, pid, s.Host)
+
 	data := ""
 	s.Entry.Children[args[1]] = &filesystem.Entry{
 		Type: filesystem.TypeFile,
