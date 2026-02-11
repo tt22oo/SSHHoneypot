@@ -11,6 +11,11 @@ func initLog(path string) error {
 		return nil
 	}
 
+	err = os.Mkdir("logs", 0755)
+	if err != nil {
+		return err
+	}
+
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
