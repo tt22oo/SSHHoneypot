@@ -1,49 +1,46 @@
 ## SSH Honeypot
-[한국어](README.md) | [English](README-EN.md)  
 
-An SSH honeypot written in Go, aiming to preserve the state (files, directories, etc. created by an attacker) even after a session is terminated.
+[한국어](README.md) | [English](README-EN.md)
 
-## 1. Reason for Creation
+An SSH honeypot written in Go, designed with the goal of preserving the state (files, directories, etc. created by an attacker) even after a session ends.
 
-Many SSH honeypots reset the environment when a session is closed and a new connection is made, even if the system appears to operate normally.
-Attackers can use this characteristic to easily detect whether they are dealing with a honeypot.
+## 1. Purpose
+Many SSH honeypots reset their environment when a session ends and a new connection is made, even if the system appears to function normally.
+Attackers can leverage this behavior to easily detect that they are interacting with a honeypot.
 
 This project was created to make such detection more difficult and to record attacker behavior in a more realistic environment.
-It also aims to directly understand how honeypots work.
+It also aims to help the developer directly understand how honeypots work internally.
 
 ## 2. How It Works
-
-1. When an attacker connects via SSH, a session is created.
-2. State is recorded based on the connecting IP.
-3. Files and directories per IP are recorded in JSON.
-4. The saved state is maintained even after the session ends.
-5. All login attempt information is logged.
+1. A session is created when an attacker connects via SSH.
+2. State is tracked based on the client’s IP address.
+3. Files and directories for each IP are recorded in JSON format.
+4. The saved state is preserved even after the session ends.
+5. All login attempts are logged.
 
 ## 3. Project Structure
-
 ### core/auth
-
-* Authentication processing
-* `log`: logging of authentication attempts
+- Authentication handling
+- `log`: authentication attempt logging
 
 ### core/commands
+- Command-related handling
+- `file`: file-related commands
+- `system`: system-related commands
 
-* Command-related processing
-* `file`: file-related commands
-* `system`: system-related commands
+### core/filesystem
+- File-related processing
+- `proc`: proc-related handling
 
 ### core/session
+- Session management and shell handling
+- `handler`: session handling
+- `shell`: command parsing and processing
+- `stream`: input/output handling
+- `log`: session logging
 
-* Session management and shell processing
-* `handler`: session handling
-* `shell`: command parsing and processing
-* `stream`: input/output processing
-* `log`: session logging
-
-## 4. Configuration Method
-
-The initial configuration file is in `configs/configs.json`.
-
+## 4. Configuration
+The initial configuration file is located at `configs/configs.json`.
 ```json
 {
     "configs": {
@@ -62,21 +59,20 @@ The initial configuration file is in `configs/configs.json`.
     }
 }
 ```
-
-* `listen`: You can set the port on which to run the SSH honeypot.
-* `banner`: You can set the banner of the SSH honeypot.
-* `max_delay`: You can specify the maximum random delay during login or command execution. (ms)
-* `auth`: You can set whether authentication is enabled for the SSH honeypot.
-* `username`: When authentication is enabled, you can set the username. (`*` allows all usernames.)
-* `password`: When authentication is enabled, you can set the password. (`*` allows all passwords.)
-* `arch`: You can set the architecture of the SSH honeypot. This is the architecture displayed by the honeypot system.
-* `host_name`: You can set the Host Name of the SSH honeypot. This is displayed by the honeypot system.
+- `listen`: Sets the port on which the SSH honeypot will run.
+- `banner`: Sets the SSH honeypot banner.
+- `max_delay`: Specifies the maximum random delay (in ms) applied during login or command execution.
+- `auth`: Enables or disables SSH authentication.
+- `username`: Username when authentication is enabled (`*` allows any username).
+- `password`: Password when authentication is enabled (`*` allows any password).
+- `arch`: Sets the architecture displayed by the honeypot system.
+- `host_name`: Sets the hostname displayed by the honeypot system.
 
 ## 5. Future Plans
 
-* Implement more natural shell parsing
-* `proc` implementation: partially implemented as of 2026-02-10
-* Improve realism of command behavior
-* Support more Linux commands
-* Develop a web-based dashboard
-* Session and attack log visualization features
+- Implement more natural shell parsing
+- Further `proc` implementation (partially implemented as of 2026-02-10)
+- Improve realism of command behavior
+- Support more Linux commands
+- Develop a web-based dashboard
+- Add visualization for sessions and attack logs
