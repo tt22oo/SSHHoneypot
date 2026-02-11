@@ -20,7 +20,7 @@ func readFile(s *session.Session, args []string) (string, error) {
 		if err != nil {
 			return "", errors.New("No such file or directory")
 		}
-		if entry.Type == filesystem.TypeDirectory {
+		if entry.Type == filesystem.Directory {
 			return "", errors.New("Is a directory")
 		}
 
@@ -29,7 +29,7 @@ func readFile(s *session.Session, args []string) (string, error) {
 		entry := s.Entry.Children[args[1]]
 		if entry == nil {
 			return "", errors.New("No such file or directory")
-		} else if entry.Type == filesystem.TypeDirectory {
+		} else if entry.Type == filesystem.Directory {
 			return "", errors.New("Is a directory")
 		}
 

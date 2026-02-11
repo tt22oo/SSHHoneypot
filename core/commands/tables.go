@@ -20,6 +20,7 @@ func Init() {
 	add("cat", file.Cat)
 	add("touch", file.Touch)
 	add("mkdir", file.Mkdir)
+	add("pwd", file.Pwd)
 
 	add("id", system.Id)
 	add("whoami", system.Whoami)

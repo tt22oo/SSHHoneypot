@@ -137,7 +137,7 @@ func parseShell(s *session.Session, input string) error {
 			}
 
 			s.Entry.Children[cmds[i+1]] = &filesystem.Entry{
-				Type: filesystem.TypeFile,
+				Type: filesystem.File,
 				Meta: &filesystem.MetaData{
 					Size: len(output),
 				},

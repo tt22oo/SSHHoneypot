@@ -17,8 +17,8 @@ type Entry struct {
 }
 
 var (
-	TypeFile      = "file"
-	TypeDirectory = "directory"
+	File      = "file"
+	Directory = "directory"
 )
 
 func Parse(f *os.File) (map[string]*Entry, error) {

@@ -1,9 +1,4 @@
 {
-    "proc": {
-    "type": "directory",
-    "metadata": null,
-    "children": {}
-    },
     "root": {
         "type": "directory",
         "metadata": null,

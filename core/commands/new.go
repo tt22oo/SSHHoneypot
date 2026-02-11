@@ -23,7 +23,7 @@ func Run(s *session.Session, args []string) (string, int) {
 
 	err := p.New(s.Procs, s.Host)
 	if err != nil {
-		return "faild make pid", 1 // 임시
+		return "", 1
 	}
 
 	return cmd(s, args, p.PID)

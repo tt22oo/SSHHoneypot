@@ -139,6 +139,17 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 
+	p := &proc.Process{
+		PPID: 1,
+		User: session.Session.User(),
+		Cmd:  "-bash",
+		Args: []string{},
+	}
+	err = p.New(session.Procs, session.Host)
+	if err != nil {
+		return nil, err
+	}
+
 	log.Add(log.Connection, session.Host, session.Host, session.ID)
 
 	banner, err := configs.ReadBanner()

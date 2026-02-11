@@ -19,7 +19,7 @@ func Mkdir(s *session.Session, args []string, pid int) (string, int) {
 		}
 
 		s.Entry.Children[name] = &filesystem.Entry{
-			Type:     filesystem.TypeDirectory,
+			Type:     filesystem.Directory,
 			Children: make(map[string]*filesystem.Entry),
 			Data:     nil,
 		}

@@ -11,7 +11,7 @@ func Touch(s *session.Session, args []string, pid int) (string, int) {
 
 	data := ""
 	s.Entry.Children[args[1]] = &filesystem.Entry{
-		Type: filesystem.TypeFile,
+		Type: filesystem.File,
 		Meta: &filesystem.MetaData{
 			Size: len(data),
 		},
