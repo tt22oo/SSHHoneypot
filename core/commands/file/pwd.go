@@ -1,6 +1,9 @@
 package file
 
-import "honeypot/core/session"
+import (
+	"honeypot/core/filesystem/proc"
+	"honeypot/core/session"
+)
 
 func Pwd(s *session.Session, args []string, pid int) (string, int) {
 	defer proc.Delete(s.Procs, pid, s.Host)
