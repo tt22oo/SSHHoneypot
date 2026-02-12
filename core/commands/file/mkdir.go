@@ -25,5 +25,10 @@ func Mkdir(s *session.Session, args []string, pid int) (string, int) {
 		}
 	}
 
+	err := filesystem.Save(s.Dirs, s.Host)
+	if err != nil {
+		return "error", 1
+	}
+
 	return result, 0
 }
