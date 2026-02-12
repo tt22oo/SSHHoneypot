@@ -7,6 +7,6 @@ import (
 )
 
 func Whoami(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 	return fmt.Sprintf("%s\r\n", s.Session.User()), 0
 }

@@ -59,7 +59,7 @@ func handleStdin(s *session.Session) error {
 }
 
 func Cat(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 
 	if len(args) == 1 {
 		err := handleStdin(s)
@@ -68,7 +68,7 @@ func Cat(s *session.Session, args []string, pid int) (string, int) {
 		}
 	} else if len(args) == 2 {
 		if strings.HasPrefix(args[1], "/proc") {
-			output, err := proc.Fetch(s.Procs, args[1])
+			output, err := proc.Fetch(s.ProcMutex, s.Procs, args[1])
 			if err != nil {
 				output := fmt.Sprintf("cat: %s: No such file or directory\r\n", args[1])
 				stream.Output(s, output)
@@ -78,7 +78,7 @@ func Cat(s *session.Session, args []string, pid int) (string, int) {
 
 			return output, 0
 		} else if strings.HasPrefix(s.Path, "/proc") {
-			output, err := proc.Fetch(s.Procs, fmt.Sprintf("%s/%s", s.Path, args[1]))
+			output, err := proc.Fetch(s.ProcMutex, s.Procs, fmt.Sprintf("%s/%s", s.Path, args[1]))
 			if err != nil {
 				output := fmt.Sprintf("cat: %s: No such file or directory\r\n", args[1])
 				stream.Output(s, output)

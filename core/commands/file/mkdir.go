@@ -8,7 +8,7 @@ import (
 )
 
 func Mkdir(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 
 	var result string
 	for _, name := range args[1:] {

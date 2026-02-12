@@ -8,9 +8,9 @@ import (
 )
 
 func Ls(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 	if s.Path == "/proc" {
-		output, _ := proc.Fetch(s.Procs, "/proc")
+		output, _ := proc.Fetch(s.ProcMutex, s.Procs, "/proc")
 		return output, 0
 	}
 

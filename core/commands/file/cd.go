@@ -9,7 +9,7 @@ import (
 )
 
 func Cd(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 	if len(args) == 1 {
 		s.Entry, _ = filesystem.Fetch(s.Dirs, "/root")
 		s.Path = "/root"

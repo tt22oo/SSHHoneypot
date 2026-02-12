@@ -6,6 +6,6 @@ import (
 )
 
 func Pwd(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 	return s.Path + "\r\n", 0
 }

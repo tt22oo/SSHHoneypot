@@ -2,6 +2,7 @@ package proc
 
 import (
 	"errors"
+	"sync"
 	"time"
 )
 
@@ -14,7 +15,10 @@ type Process struct {
 	StartTime time.Time `json:"start_time"`
 }
 
-func (p *Process) New(procs map[int]*Process, host string) error {
+func (p *Process) New(mu *sync.Mutex, procs map[int]*Process, host string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	pid := newPID(procs)
 	procs[pid] = p
 
@@ -24,7 +28,10 @@ func (p *Process) New(procs map[int]*Process, host string) error {
 	return Save(procs, host)
 }
 
-func Delete(procs map[int]*Process, pid int, host string) error {
+func Delete(mu *sync.Mutex, procs map[int]*Process, pid int, host string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	p := procs[pid]
 	if p == nil {
 		return errors.New("not found pid")

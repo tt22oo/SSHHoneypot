@@ -3,9 +3,11 @@ package proc
 import (
 	"errors"
 	"fmt"
+	"honeypot/core/uptime"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func fetchProc(procs map[int]*Process) []string {
@@ -16,6 +18,7 @@ func fetchProc(procs map[int]*Process) []string {
 
 	result = append(result, "cpuinfo")
 	result = append(result, "meminfo")
+	result = append(result, "uptime")
 
 	return result
 }
@@ -39,7 +42,10 @@ func fetchINFO(name string) (string, error) {
 	return string(data), err
 }
 
-func Fetch(procs map[int]*Process, path string) (string, error) {
+func Fetch(mu *sync.Mutex, procs map[int]*Process, path string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	var result string
 	paths := strings.Split(strings.Trim(path, "/"), "/")
 	switch len(paths) {
@@ -55,6 +61,10 @@ func Fetch(procs map[int]*Process, path string) (string, error) {
 	case 2:
 		if paths[1] == "cpuinfo" || paths[1] == "meminfo" {
 			return fetchINFO(paths[1])
+		} else if paths[1] == "uptime" {
+			ut := uptime.FetchUptime()
+			cpu := ut * 3 * 0.3
+			result += fmt.Sprintf("%.2f %.2f\r\n", uptime.FetchUptime(), cpu)
 		}
 	case 3:
 		if paths[0] == "proc" {

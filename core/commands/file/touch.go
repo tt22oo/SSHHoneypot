@@ -7,7 +7,7 @@ import (
 )
 
 func Touch(s *session.Session, args []string, pid int) (string, int) {
-	defer proc.Delete(s.Procs, pid, s.Host)
+	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
 
 	data := ""
 	s.Entry.Children[args[1]] = &filesystem.Entry{

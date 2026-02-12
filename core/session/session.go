@@ -21,7 +21,7 @@ type Session struct {
 	Entry     *filesystem.Entry
 	Dirs      map[string]*filesystem.Entry
 	Procs     map[int]*proc.Process // key: pid
-	ProcMutex sync.Mutex
+	ProcMutex *sync.Mutex
 }
 
 func newDirs(host string) (*os.File, error) {
@@ -113,10 +113,11 @@ func newSession(s ssh.Session) (*Session, *os.File, *os.File, error) {
 	}
 
 	return &Session{
-		ID:      id,
-		Session: s,
-		Host:    host,
-		Path:    "/root",
+		ID:        id,
+		Session:   s,
+		Host:      host,
+		Path:      "/root",
+		ProcMutex: &sync.Mutex{},
 	}, fdirs, fprocs, nil
 }
 
@@ -131,10 +132,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 	session.Entry = session.Dirs["root"]
-
-	session.ProcMutex.Lock()
 	session.Procs, err = proc.Parse(fprocs)
-	session.ProcMutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +143,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 		Cmd:  "-bash",
 		Args: []string{},
 	}
-	err = p.New(session.Procs, session.Host)
+	err = p.New(session.ProcMutex, session.Procs, session.Host)
 	if err != nil {
 		return nil, err
 	}
