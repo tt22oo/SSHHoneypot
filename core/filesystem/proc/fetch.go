@@ -18,6 +18,7 @@ func fetchProc(procs map[int]*Process) []string {
 
 	result = append(result, "cpuinfo")
 	result = append(result, "meminfo")
+	result = append(result, "version")
 	result = append(result, "uptime")
 
 	return result
@@ -59,12 +60,13 @@ func Fetch(mu *sync.Mutex, procs map[int]*Process, path string) (string, error) 
 			result += "\r\n"
 		}
 	case 2:
-		if paths[1] == "cpuinfo" || paths[1] == "meminfo" {
+		switch paths[1] {
+		case "cpuinfo", "meminfo", "version":
 			return fetchINFO(paths[1])
-		} else if paths[1] == "uptime" {
+		case "uptime":
 			ut := uptime.FetchUptime()
 			cpu := ut * 3 * 0.3
-			result += fmt.Sprintf("%.2f %.2f\r\n", uptime.FetchUptime(), cpu)
+			result += fmt.Sprintf("%.2f %.2f\r\n", ut, cpu)
 		}
 	case 3:
 		if paths[0] == "proc" {

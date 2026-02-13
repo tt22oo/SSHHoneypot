@@ -18,16 +18,10 @@ func Mkdir(s *session.Session, args []string, pid int) (string, int) {
 			continue
 		}
 
-		s.Entry.Children[name] = &filesystem.Entry{
-			Type:     filesystem.Directory,
-			Children: make(map[string]*filesystem.Entry),
-			Data:     nil,
+		err = filesystem.Make(s.Dirs, s.Entry, filesystem.Directory, name, "", s.Host)
+		if err != nil {
+			return "error", 1
 		}
-	}
-
-	err := filesystem.Save(s.Dirs, s.Host)
-	if err != nil {
-		return "error", 1
 	}
 
 	return result, 0

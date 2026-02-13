@@ -16,7 +16,7 @@ type Entry struct {
 	Data     *string           `json:"data"`
 }
 
-var (
+const (
 	File      = "file"
 	Directory = "directory"
 )

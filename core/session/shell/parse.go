@@ -136,20 +136,12 @@ func parseShell(s *session.Session, input string) error {
 				continue
 			}
 
-			s.Entry.Children[cmds[i+1]] = &filesystem.Entry{
-				Type: filesystem.File,
-				Meta: &filesystem.MetaData{
-					Size: len(output),
-				},
-				Data: &output,
-			}
-
-			cmds[i+1] = ""
-
-			err := filesystem.Save(s.Dirs, s.Host)
+			err := filesystem.Make(s.Dirs, s.Entry, filesystem.File, cmds[i+1], output, s.Host)
 			if err != nil {
 				return err
 			}
+
+			cmds[i+1] = ""
 		default:
 			if cmd != "" {
 				command = append(command, cmd)

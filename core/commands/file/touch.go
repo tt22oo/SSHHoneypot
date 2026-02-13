@@ -8,20 +8,14 @@ import (
 
 func Touch(s *session.Session, args []string, pid int) (string, int) {
 	defer proc.Delete(s.ProcMutex, s.Procs, pid, s.Host)
+	if len(args) == 2 {
+		err := filesystem.Make(s.Dirs, s.Entry, filesystem.File, args[1], "", s.Host)
+		if err != nil {
+			return "", 1
+		}
 
-	data := ""
-	s.Entry.Children[args[1]] = &filesystem.Entry{
-		Type: filesystem.File,
-		Meta: &filesystem.MetaData{
-			Size: len(data),
-		},
-		Data: &data,
+		return "", 0
 	}
 
-	err := filesystem.Save(s.Dirs, s.Host)
-	if err != nil {
-		return "", 1
-	}
-
-	return "", 0
+	return "touch: missing file operand\r\nTry 'touch --help' for more information.\r\n", 1
 }
