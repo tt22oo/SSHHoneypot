@@ -4,6 +4,7 @@ import (
 	"honeypot/core/commands/file"
 	"honeypot/core/commands/system"
 	"honeypot/core/session"
+	"log"
 )
 
 type command func(s *session.Session, args []string, pid int) (string, int)
@@ -28,4 +29,6 @@ func Init() {
 	add("arch", system.Arch)
 	add("clear", system.Clear)
 	add("sleep", system.Sleep)
+
+	log.Printf(" \033[32m[SUCCESS]\033[0m Commands Loaded (%d)\r\n", len(commandTables))
 }
