@@ -2,6 +2,7 @@ package configs
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 )
 
@@ -44,6 +45,8 @@ func Read() error {
 	}
 
 	Cfg = config
+
+	log.Println(" \033[32m[SUCCESS]\033[0m Configs Read")
 
 	return nil
 }
