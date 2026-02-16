@@ -29,10 +29,12 @@ type Configs struct {
 	System System `json:"system"`
 }
 
+const configPATH string = "configs/config.json"
+
 var Cfg Configs
 
 func Read() error {
-	file, err := os.Open("configs/config.json")
+	file, err := os.Open(configPATH)
 	if err != nil {
 		return err
 	}

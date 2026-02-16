@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"honeypot/core/filesystem/proc"
 	"honeypot/core/session"
 	"honeypot/core/session/shell"
 	"log"
@@ -17,6 +18,7 @@ func Handler(s ssh.Session) {
 		log.Println(err)
 		return
 	}
+	defer proc.Delete(session.ProcMutex, session.Procs, session.BashPID, session.Host)
 
 	err = shell.Handler(session)
 	if err != nil {

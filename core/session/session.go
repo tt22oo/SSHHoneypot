@@ -5,7 +5,7 @@ import (
 	"honeypot/core/configs"
 	"honeypot/core/filesystem"
 	"honeypot/core/filesystem/proc"
-	"honeypot/core/session/log"
+	"honeypot/core/session/logger"
 	"net"
 	"os"
 	"sync"
@@ -15,6 +15,7 @@ import (
 
 type Session struct {
 	ID        string
+	BashPID   int
 	Session   ssh.Session
 	Host      string
 	Path      string
@@ -23,6 +24,8 @@ type Session struct {
 	Procs     map[int]*proc.Process // key: pid
 	ProcMutex *sync.Mutex
 }
+
+const procPATH string = "configs/proc/procs.json"
 
 func newDirs(host string) (*os.File, error) {
 	path := fmt.Sprintf("sessions/%s", host)
@@ -59,7 +62,7 @@ func newProcs(host string) (*os.File, error) {
 	path += "/procs.json"
 	_, err = os.Stat(path)
 	if err != nil {
-		data, err := os.ReadFile("configs/proc/procs.json")
+		data, err := os.ReadFile(procPATH)
 		if err != nil {
 			return nil, err
 		}
@@ -132,6 +135,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 	session.Entry = session.Dirs["root"]
+
 	session.Procs, err = proc.Parse(fprocs)
 	if err != nil {
 		return nil, err
@@ -147,8 +151,9 @@ func InitSession(s ssh.Session) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
+	session.BashPID = p.PID
 
-	log.Add(log.Connection, session.Host, session.Host, session.ID)
+	logger.Add(logger.Connection, session.Host, session.Host, session.ID)
 
 	banner, err := configs.ReadBanner()
 	if err != nil {

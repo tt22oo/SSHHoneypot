@@ -2,7 +2,7 @@ package shell
 
 import (
 	"honeypot/core/session"
-	"honeypot/core/session/log"
+	"honeypot/core/session/logger"
 	"honeypot/core/session/stream"
 )
 
@@ -13,14 +13,14 @@ func Handler(s *session.Session) error {
 			return err
 		}
 
-		output, err := stream.Input(s)
+		input, err := stream.Input(s)
 		if err != nil {
 			return err
 		}
 
-		log.Add(log.Command, output, s.Host, s.ID)
+		logger.Add(logger.Command, input, s.Host, s.ID)
 
-		err = parseShell(s, output)
+		err = parseShell(s, input)
 		if err != nil {
 			return err
 		}

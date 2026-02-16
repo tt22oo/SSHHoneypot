@@ -25,6 +25,7 @@ func (p *Process) New(mu *sync.Mutex, procs map[int]*Process, host string) error
 	p.PID = pid
 	p.StartTime = time.Now()
 
+	//log.Printf(" \033[36m[PROC]\033[0m New Process %s (PID=%d PPID=%d USER=%s CMD=%s)\r\n", host, p.PID, p.PPID, p.User, p.Cmd)
 	return Save(procs, host)
 }
 
@@ -38,5 +39,7 @@ func Delete(mu *sync.Mutex, procs map[int]*Process, pid int, host string) error 
 	}
 
 	delete(procs, pid)
+	//log.Printf(" \033[36m[PROC]\033[0m Deleted Process %s (PID=%d)\r\n", host, p.PID)
+
 	return Save(procs, host)
 }

@@ -3,6 +3,7 @@ package log
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -13,6 +14,8 @@ var AuthMu sync.Mutex
 func Add(ip, username, password string) error {
 	AuthMu.Lock()
 	defer AuthMu.Unlock()
+
+	log.Printf(" \033[32m[LOGIN]\033[0m %s (%s:%s)\r\n", ip, username, password)
 
 	path := fmt.Sprintf("logs/%s.csv", time.Now().Format("2006-01-02"))
 	err := initLog(path)
