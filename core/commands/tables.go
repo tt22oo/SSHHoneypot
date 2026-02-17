@@ -29,6 +29,7 @@ func Init() {
 	add("arch", system.Arch)
 	add("clear", system.Clear)
 	add("sleep", system.Sleep)
+	add("ps", system.Ps)
 
 	log.Printf(" \033[32m[SUCCESS]\033[0m Commands Loaded (%d)\r\n", len(commandTables))
 }

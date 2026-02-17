@@ -25,7 +25,12 @@ type Session struct {
 	ProcMutex *sync.Mutex
 }
 
-const procPATH string = "configs/proc/procs.json"
+const (
+	configPATH string = "configs"
+	procPATH   string = "/proc"
+	procJSON   string = "/procs.json"
+	dirJSON    string = "/dirs.json"
+)
 
 func newDirs(host string) (*os.File, error) {
 	path := fmt.Sprintf("sessions/%s", host)
@@ -34,10 +39,10 @@ func newDirs(host string) (*os.File, error) {
 		return nil, err
 	}
 
-	path += "/dirs.json"
+	path += dirJSON
 	_, err = os.Stat(path)
 	if err != nil {
-		data, err := os.ReadFile("configs/dirs.json")
+		data, err := os.ReadFile(configPATH + dirJSON)
 		if err != nil {
 			return nil, err
 		}
@@ -59,10 +64,10 @@ func newProcs(host string) (*os.File, error) {
 		return nil, err
 	}
 
-	path += "/procs.json"
+	path += procJSON
 	_, err = os.Stat(path)
 	if err != nil {
-		data, err := os.ReadFile(procPATH)
+		data, err := os.ReadFile(configPATH + procPATH + procJSON)
 		if err != nil {
 			return nil, err
 		}
@@ -124,6 +129,22 @@ func newSession(s ssh.Session) (*Session, *os.File, *os.File, error) {
 	}, fdirs, fprocs, nil
 }
 
+func (s *Session) spawnBash() error {
+	p := &proc.Process{
+		PPID: 1,
+		User: s.Session.User(),
+		Cmd:  "-bash",
+		Args: []string{},
+	}
+	err := p.New(s.ProcMutex, s.Procs, s.Host, 1)
+	if err != nil {
+		return err
+	}
+	s.BashPID = p.PID
+
+	return nil
+}
+
 func InitSession(s ssh.Session) (*Session, error) {
 	session, fdirs, fprocs, err := newSession(s)
 	if err != nil {
@@ -141,17 +162,10 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 
-	p := &proc.Process{
-		PPID: 1,
-		User: session.Session.User(),
-		Cmd:  "-bash",
-		Args: []string{},
-	}
-	err = p.New(session.ProcMutex, session.Procs, session.Host)
+	err = session.spawnBash()
 	if err != nil {
 		return nil, err
 	}
-	session.BashPID = p.PID
 
 	logger.Add(logger.Connection, session.Host, session.Host, session.ID)
 

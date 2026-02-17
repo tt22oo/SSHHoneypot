@@ -21,7 +21,7 @@ func Run(s *session.Session, args []string) (string, int) {
 		Args: args[1:],
 	}
 
-	err := p.New(s.ProcMutex, s.Procs, s.Host)
+	err := p.New(s.ProcMutex, s.Procs, s.Host, s.BashPID)
 	if err != nil {
 		return "", 1
 	}
