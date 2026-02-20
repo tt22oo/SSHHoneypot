@@ -55,8 +55,8 @@ func (s *Session) copyJSON(src, dst string) (*os.File, error) {
 	return f, err
 }
 
-func fetchID(host string) (string, error) {
-	path := fmt.Sprintf("sessions/%s/", host)
+func (s *Session) fetchID() (string, error) {
+	path := fmt.Sprintf("sessions/%s/", s.Host)
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return "", err
@@ -137,7 +137,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 
-	session.ID, err = fetchID(session.Host)
+	session.ID, err = session.fetchID()
 	if err != nil {
 		return nil, err
 	}
