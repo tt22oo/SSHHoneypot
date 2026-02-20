@@ -32,53 +32,26 @@ const (
 	dirJSON    string = "/dirs.json"
 )
 
-func newDirs(host string) (*os.File, error) {
-	path := fmt.Sprintf("sessions/%s", host)
-	err := os.MkdirAll(path, 0755)
+func (s *Session) copyJSON(src, dst string) (*os.File, error) {
+	err := os.MkdirAll(fmt.Sprintf("sessions/%s", s.Host), 0755)
 	if err != nil {
 		return nil, err
 	}
 
-	path += dirJSON
-	_, err = os.Stat(path)
+	_, err = os.Stat(dst)
 	if err != nil {
-		data, err := os.ReadFile(configPATH + dirJSON)
+		data, err := os.ReadFile(src)
 		if err != nil {
 			return nil, err
 		}
 
-		err = os.WriteFile(path, data, 0644)
+		err = os.WriteFile(dst, data, 0644)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	f, err := os.Open(path)
-	return f, err
-}
-
-func newProcs(host string) (*os.File, error) {
-	path := fmt.Sprintf("sessions/%s", host)
-	err := os.MkdirAll(path, 0755)
-	if err != nil {
-		return nil, err
-	}
-
-	path += procJSON
-	_, err = os.Stat(path)
-	if err != nil {
-		data, err := os.ReadFile(configPATH + procPATH + procJSON)
-		if err != nil {
-			return nil, err
-		}
-
-		err = os.WriteFile(path, data, 0644)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	f, err := os.Open(path)
+	f, err := os.Open(dst)
 	return f, err
 }
 
@@ -99,34 +72,18 @@ func fetchID(host string) (string, error) {
 	return fmt.Sprintf("%d", n+1), nil
 }
 
-func newSession(s ssh.Session) (*Session, *os.File, *os.File, error) {
+func newSession(s ssh.Session) (*Session, error) {
 	host, _, err := net.SplitHostPort(s.RemoteAddr().String())
 	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	fdirs, err := newDirs(host)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	fprocs, err := newProcs(host)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	id, err := fetchID(host)
-	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
 	return &Session{
-		ID:        id,
 		Session:   s,
 		Host:      host,
 		Path:      "/root",
 		ProcMutex: &sync.Mutex{},
-	}, fdirs, fprocs, nil
+	}, nil
 }
 
 func (s *Session) spawnBash() error {
@@ -145,19 +102,42 @@ func (s *Session) spawnBash() error {
 	return nil
 }
 
+func (s *Session) writeBanner(banner []byte) error {
+	_, err := s.Session.Write([]byte("\x1b[H\x1b[2J\x1b[3J"))
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Session.Write(banner)
+	return err
+}
+
 func InitSession(s ssh.Session) (*Session, error) {
-	session, fdirs, fprocs, err := newSession(s)
+	session, err := newSession(s)
 	if err != nil {
 		return nil, err
 	}
 
-	session.Dirs, err = filesystem.Parse(fdirs)
+	f, err := session.copyJSON(configPATH+dirJSON, "sessions/"+session.Host+dirJSON)
+	if err != nil {
+		return nil, err
+	}
+	session.Dirs, err = filesystem.Parse(f)
 	if err != nil {
 		return nil, err
 	}
 	session.Entry = session.Dirs["root"]
 
-	session.Procs, err = proc.Parse(fprocs)
+	f, err = session.copyJSON(configPATH+procPATH+procJSON, "sessions/"+session.Host+procJSON)
+	if err != nil {
+		return nil, err
+	}
+	session.Procs, err = proc.Parse(f)
+	if err != nil {
+		return nil, err
+	}
+
+	session.ID, err = fetchID(session.Host)
 	if err != nil {
 		return nil, err
 	}
@@ -173,16 +153,5 @@ func InitSession(s ssh.Session) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	_, err = s.Write([]byte("\x1b[H\x1b[2J\x1b[3J"))
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = s.Write(banner)
-	if err != nil {
-		return nil, err
-	}
-
-	return session, nil
+	return session, session.writeBanner(banner)
 }
