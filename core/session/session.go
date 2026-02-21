@@ -72,6 +72,12 @@ func (s *Session) fetchID() (string, error) {
 	return fmt.Sprintf("%d", n+1), nil
 }
 
+func (s *Session) Close() {
+	defer s.Session.Close()
+	proc.Delete(s.ProcMutex, s.Procs, s.BashPID, s.Host)
+	logger.Add(logger.Disconnection, s.Host, s.Host, s.ID)
+}
+
 func newSession(s ssh.Session) (*Session, error) {
 	host, _, err := net.SplitHostPort(s.RemoteAddr().String())
 	if err != nil {
