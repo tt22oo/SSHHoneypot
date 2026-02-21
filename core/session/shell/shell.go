@@ -7,6 +7,7 @@ import (
 )
 
 func Handler(s *session.Session) error {
+	defer s.Close()
 	for {
 		err := writePrompt(s)
 		if err != nil {
