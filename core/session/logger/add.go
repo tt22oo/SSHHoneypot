@@ -11,8 +11,9 @@ import (
 type DataType string
 
 const (
-	Connection DataType = "connection"
-	Command    DataType = "command"
+	Connection    DataType = "new_connection"
+	Disconnection DataType = "disconnection"
+	Command       DataType = "new_command"
 )
 
 func Add(t DataType, data, host, id string) error {
@@ -30,7 +31,7 @@ func Add(t DataType, data, host, id string) error {
 	w := csv.NewWriter(file)
 	defer w.Flush()
 
-	log.Printf(" \033[32m[SESSION]\033[0m New %s: (%s) (host=%s id=%s)\r\n", t, data, host, id)
+	log.Printf(" \033[32m[SESSION]\033[0m %s: (%s) (host=%s id=%s)\r\n", t, data, host, id)
 
 	return w.Write([]string{
 		time.Now().Format(time.RFC3339),
