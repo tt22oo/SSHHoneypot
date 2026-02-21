@@ -107,7 +107,7 @@ It also aims to directly understand how honeypots work.
 ## 5. Future plans
 
 - More natural shell parsing implementation
-- `proc` implementation: partially implemented on 2026-02-10
+- ~~`proc` implementation~~
 - Improving realism of command behavior
 - Supporting more Linux commands
 - Developing a web-based dashboard
