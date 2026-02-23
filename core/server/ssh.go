@@ -1,20 +1,20 @@
 package server
 
 import (
-	"fmt"
+	"log"
 	"honeypot/core/auth"
 	"honeypot/core/commands"
 	"honeypot/core/configs"
 	"honeypot/core/session/handler"
-	"log"
 
 	"github.com/gliderlabs/ssh"
 )
 
-func StartSSH() error {
+func StartSSH() {
 	err := configs.Read()
 	if err != nil {
-		return fmt.Errorf("Read Config Error: %s", err.Error())
+		log.Printf(" \033[31m[ERROR]\033[0m Read Config Error: %s\r\n", err.Error())
+		return
 	}
 
 	commands.Init()
@@ -30,6 +30,9 @@ func StartSSH() error {
 		log.Println(" \033[34m[INFO]\033[0m Password Authentication Enabled")
 	}
 
-	log.Printf(" \033[34m[INFO]\033[0m Server Listening on Port %s\r\n", configs.Cfg.Config.Listen)
-	return fmt.Errorf("SSH Server Error: %s", server.ListenAndServe().Error())
+	log.Printf(" \033[34m[INFO]\033[0m SSH Server Listening on Port %s\r\n", configs.Cfg.Config.Listen)
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Printf(" \033[31m[ERROR]\033[0m SSH Server Error: %s\r\n", err.Error())
+	}
 }
