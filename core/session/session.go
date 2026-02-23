@@ -26,6 +26,7 @@ type Session struct {
 }
 
 const (
+	sessionPATH string = "sessions/"
 	configPATH string = "configs"
 	procPATH   string = "/proc"
 	procJSON   string = "/procs.json"
@@ -33,7 +34,7 @@ const (
 )
 
 func (s *Session) copyJSON(src, dst string) (*os.File, error) {
-	err := os.MkdirAll(fmt.Sprintf("sessions/%s", s.Host), 0755)
+	err := os.MkdirAll(fmt.Sprintf("%s%s", sessionPATH, s.Host), 0755)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (s *Session) copyJSON(src, dst string) (*os.File, error) {
 }
 
 func (s *Session) fetchID() (string, error) {
-	path := fmt.Sprintf("sessions/%s/", s.Host)
+	path := fmt.Sprintf("%s%s/", sessionPATH, s.Host)
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return "", err
@@ -124,7 +125,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 		return nil, err
 	}
 
-	f, err := session.copyJSON(configPATH+dirJSON, "sessions/"+session.Host+dirJSON)
+	f, err := session.copyJSON(configPATH+dirJSON, sessionPATH+session.Host+dirJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func InitSession(s ssh.Session) (*Session, error) {
 	}
 	session.Entry = session.Dirs["root"]
 
-	f, err = session.copyJSON(configPATH+procPATH+procJSON, "sessions/"+session.Host+procJSON)
+	f, err = session.copyJSON(configPATH+procPATH+procJSON, sessionPATH+session.Host+procJSON)
 	if err != nil {
 		return nil, err
 	}
