@@ -22,6 +22,9 @@ It also aims to directly understand how honeypots work.
 
 ## 3. Project structure
 
+### core/server
+- start server and management
+
 ### core/auth
 
 - Authentication handling
